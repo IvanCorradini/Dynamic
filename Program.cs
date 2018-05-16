@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Dynamic
+namespace DynamicSample
 {
     class Program
     {
@@ -8,7 +8,7 @@ namespace Dynamic
         {
             //Console.WriteLine("Hello World!");
 
-            
+
         }
     }
 }
