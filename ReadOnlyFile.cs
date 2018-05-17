@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO; 
 using System.Dynamic;
+using System.Collections.Generic;
 
 namespace DynamicSample
 {
@@ -22,6 +23,81 @@ namespace DynamicSample
                     }
               p_filePath = filePath; 
             }        
+
+        public List<string> GetPropertyValue (string propertyName, StringSearchOption StringSearchOption = StringSearchOption.StartsWith, bool trimSpaces = true)
+            {
+                StreamReader sr = null;
+                List <string> results = new List <string> ();
+                string line = "";
+                string testLine = "";
+
+                try
+                {
+                    sr = new StreamReader (p_filePath);
+                    while (!sr.EndOfStream)
+                    {
+                        line = sr.ReadLine();
+                        testLine = line.ToUpper();
+                        if (trimSpaces) {testLine = testLine.Trim();}
+                        switch (StringSearchOption)
+                        {
+                            case StringSearchOption.StartsWith :
+                                if (testLine.StartsWith (propertyName.ToUpper())) {results.Add(line);}
+                            break;
+                            case StringSearchOption.Contains :
+                                if (testLine.Contains (propertyName.ToUpper())) {results.Add(line);}
+                            break;
+                            case StringSearchOption.EndsWith:
+                                if (testLine.EndsWith (propertyName.ToUpper())) {results.Add(line);}
+                            break;
+                        }
+                    }
+                }
+                catch 
+                {                    
+                    results = null;
+                }
+                finally {
+                    if (sr != null) {sr.Close();}
+                }
+            return results;
+            }
+
+            // Implement the TryGetMember method of the DynamicObject class for dynamic member calls. 
+            public override bool TryGetMember(GetMemberBinder binder, out object result) 
+                {    
+                result = GetPropertyValue(binder.Name);    
+                return result == null ? false : true; 
+                }
+
+            public override bool TryInvokeMember(InvokeMemberBinder binder, object[] args, out object result) 
+            
+            {
+                StringSearchOption StringSearchOption = StringSearchOption.StartsWith;
+                bool trimSpaces = true;
+                try
+                {
+                    if (args.Length > 0) {StringSearchOption = (StringSearchOption)args[0];}
+                }
+                catch
+                {                    
+                    throw new ArgumentException ("StringSearchOption must be a StringSearchOption enum value");
+                }
+
+                try
+                {
+                    if (args.Length>1) {trimSpaces = (bool)args[1];}
+                }
+                catch 
+                {
+                    
+                    throw new ArgumentException ("trimSpaces must be boolean value");
+                }
+
+                result = GetPropertyValue(binder.Name,StringSearchOption,trimSpaces);
+                return result == null ? false:true;
+            }
+
     }
-    
+
 }
